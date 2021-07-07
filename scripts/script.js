@@ -57,6 +57,37 @@ const cartModalClose = () => {
   enableScroll(); //разблокируем скролл
 };
 
+
+
+
+// запрос базы данных
+// запрашиваем асинхронно, данные получаем не сразу, оператор async  пишется перед функцией
+const getData = async () => {
+  // fetch получаем данные, первый параметр путь до сервера, await оператор для того, чтобы оператор присваивания не работал, пока fetch не пришлет ответ 
+  const data = await fetch('db.json');
+// функция, которая возвращает файл с данными
+  if (data.ok) {
+    return data.json();
+  } else {
+    throw new Error(`данные не были получены, ошибка ${data.status} ${data.statusText}`);
+    }
+};
+//  callback функции вызываются позже? здесь данные получаем и обрабатываем
+const getGoods = (callback) => {
+  getData()
+    .then(data => {
+      callback(data);
+    })
+    .catch(err => {
+      console.error(err);
+    });
+};
+
+getGoods((data) => {
+  console.warn(data);
+});
+
+
 // функция, отслеживающая событие клик, добавляющая клас и открывающая модальное окно
 subheaderСart.addEventListener('click', (cartModalOpen));
 
@@ -70,4 +101,3 @@ cartOverlay.addEventListener('click', event => {
     cartModalClose(); 
   }
 });
-
