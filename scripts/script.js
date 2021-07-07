@@ -11,19 +11,50 @@ headerCityButton.addEventListener('click', () => {
   localStorage.setItem('lomoda-location', city);
 });
 
-// Модальное окно
+// блокировка скролла
+const disableScroll = () => {
+  // находим ширину скролла / window - это ширина всего браузера, включая скролл, document содержит только документ, скролл не учитывается
+  const widthScroll = window.innerWidth - document.body.offsetWidth;
+  // убираем вертикальный прыжок при открытии модального окна, запоминаем расположение экрана при нажатии на корзину
+  document.body.dbScrollY = window.scrollY;
+  // Добавляем стили, overflow скрывает скролл, padding-right не дает прыгать странице горизонтально
+  document.body.style.cssText = `
+    position: fixed;
+    top: ${-window.scrollY}px;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    padding-right: ${widthScroll}px;
+  `;
+  // document.body.style.overflow = 'hidden'; первый вариант убрать скролл, но тогда страница сдвигается
+};
 
+// разблокировка скролла
+const enableScroll = () => {
+  // убираем заданные стили при скрытии скролла
+  document.body.style.cssText = '';
+  // При закрытии корзины остаемся на том же месте
+  window.scroll({
+    top: document.body.dbScrollY,
+  });
+  // document.body.style.overflow = '';  первый вариант убрать скролл, но тогда страница сдвигается
+};
+
+// Модальное окно
 const subheaderСart = document.querySelector('.subheader__cart'); // кнопка корзины
 const cartOverlay = document.querySelector('.cart-overlay'); // модальное окно
 
 // переменная, которая содержит функцию, добавляющую класс
 const cartModalOpen = () => {
   cartOverlay.classList.add('cart-overlay-open'); // classList объект с методами / add добавляет класс / класс без точки, тк добавляем 
+  disableScroll(); //блокируем скролл
 };
 
 // переменная, которая содержит функцию, убирающую класс
 const cartModalClose = () => {
   cartOverlay.classList.remove('cart-overlay-open'); // classList объект с методами / remove убирает класс
+  enableScroll(); //разблокируем скролл
 };
 
 // функция, отслеживающая событие клик, добавляющая клас и открывающая модальное окно
@@ -39,3 +70,4 @@ cartOverlay.addEventListener('click', event => {
     cartModalClose(); 
   }
 });
+
