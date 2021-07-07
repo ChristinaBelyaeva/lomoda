@@ -1,6 +1,9 @@
 // Переменная для кнопки выбора города
 const headerCityButton = document.querySelector('.header__city-button');
 
+// переменная определяющая хэш (#) страницы
+let hash = location.hash.substring(1);
+
 // Условия для определения города, если город не указан выводит текст по умолчанию
 headerCityButton.textContent = localStorage.getItem('lomoda-location') || 'Ваш город?';
 
@@ -72,20 +75,23 @@ const getData = async () => {
     throw new Error(`данные не были получены, ошибка ${data.status} ${data.statusText}`);
     }
 };
-//  callback функции вызываются позже? здесь данные получаем и обрабатываем
-const getGoods = (callback) => {
+//  callback функции вызываются позже, здесь данные получаем и обрабатываем
+const getGoods = (callback, value) => {
   getData()
     .then(data => {
-      callback(data);
+      if (value) {
+        // здесь проверяем значение хэша
+        callback(data.filter(item => item.category === value));
+      } else {
+        callback(data);
+      }
     })
     .catch(err => {
       console.error(err);
     });
 };
 
-getGoods((data) => {
-  console.warn(data);
-});
+
 
 
 // функция, отслеживающая событие клик, добавляющая клас и открывающая модальное окно
@@ -101,3 +107,102 @@ cartOverlay.addEventListener('click', event => {
     cartModalClose(); 
   }
 });
+
+
+
+
+//  если код внутри try вызывает какую-либо ошибку, то срабатывает catch и выводит ошибку
+try {
+  console.log(hash);
+
+// переменная, которыя содержит весь список товаров на странице goods
+  const goodsList = document.querySelector('.goods__list');
+
+  if (!goodsList) {
+    throw 'This is not a goods page!';
+  }
+// функция которая формирует карточки товаров
+  const createCard = ({ id, preview, cost, brand, name, sizes }) => {
+
+    // запрашиваем эти данные выше, ниже в развернутом виде
+    // const { id, preview, cost, brand, name, sizes } = data;
+
+    // запрашиваем id товара 
+    // const id = data.id;
+    // // запрашиваем картинку, картинка превью маленького размера
+    // const preview = data.preview;
+    // // запрашиваем стоимость товара
+    // const cost = data.cost;
+    // // запрашиваем бренд товара
+    // const brand = data.brand;
+    // // запрашиваем наименование товара
+    // const name = data.name;
+    // // запрашиваем размеры товара (это будет массив, т.к. несколько видов)
+    // const sizes = data.sizes;
+
+
+
+    // создаем новый элемент
+    const li = document.createElement('li');
+    // добавляем класс к новому элементу
+    li.classList.add('goods__item');
+    // делаем шаблон карточки с указанием данных, которые должны подтягиваться 
+    li.innerHTML = `
+    <article class="good">
+      <a class="good__link-img" href="card-good.html#${id}">
+        <img class="good__img" src="goods-image/${preview}" alt="">
+      </a>
+      <div class="good__description">
+        <p class="good__price">${cost} &#8381;</p>
+        <h3 class="good__title">${brand} 
+        <span class="good__title__grey">/ ${name}</span>
+        </h3>
+        ${sizes ?
+          `<p class="good__sizes">Размеры (RUS):
+          <span class="good__sizes-list">${sizes.join(' ')}</span>
+          </p>` :
+          ''}
+        <a class="good__link" href="card-good.html#${id}">Подробнее
+        </a>
+      </div>
+    </article>
+    `;
+    // возвращаем на место
+    return li;
+  };
+
+  // функция, которая будет рендерить карточки товара
+  const renderGoodsList = data => {
+    // очистили страницу от содержимого
+    goodsList.textContent = '';
+    console.log(data);
+    // цикл который перебирает карточки
+    // for (let i = 0; i < data.length; i++) {
+    // }
+
+    // другой вариант цикла
+    // for (const item of data) {
+    // }
+
+    // еще вариант перебора карточек через функцию
+    data.forEach((item) => {
+      // создаем карточку, передаем в нее item
+      const card = createCard(item);
+      // в список добавляем карточку
+      goodsList.append(card);
+    });
+  };
+
+  // отслеживаем изменение хэша страницы
+  window.addEventListener('hashchange', () => {
+    // записали в переменную новый хэш
+    hash = location.hash.substring(1);
+    // заново вызвали страницу с товарами
+    getGoods(renderGoodsList, hash);
+  });
+
+  getGoods(renderGoodsList, hash);
+
+} catch (err) {
+  console.warn(err);
+  }
