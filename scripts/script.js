@@ -110,10 +110,10 @@ cartOverlay.addEventListener('click', event => {
 
 
 
+// страница товаров
 
 //  если код внутри try вызывает какую-либо ошибку, то срабатывает catch и выводит ошибку
 try {
-  console.log(hash);
 
 // переменная, которыя содержит весь список товаров на странице goods
   const goodsList = document.querySelector('.goods__list');
@@ -121,6 +121,18 @@ try {
   if (!goodsList) {
     throw 'This is not a goods page!';
   }
+
+  // переменная, которая содержит заголовок
+  const goodsTitle = document.querySelector('.goods__title');
+
+  // функция, которая меня заголовок
+  const changeTitle = () => {
+    // извлекаем хэш страницы
+    goodsTitle.textContent = document.querySelector(`[href*="#${hash}"]`).textContent;
+  }
+
+  
+
 // функция которая формирует карточки товаров
   const createCard = ({ id, preview, cost, brand, name, sizes }) => {
 
@@ -199,8 +211,9 @@ try {
     hash = location.hash.substring(1);
     // заново вызвали страницу с товарами
     getGoods(renderGoodsList, hash);
+    changeTitle();
   });
-
+  changeTitle();
   getGoods(renderGoodsList, hash);
 
 } catch (err) {
